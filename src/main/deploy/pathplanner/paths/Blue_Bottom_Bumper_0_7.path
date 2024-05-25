@@ -1,0 +1,100 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 0.75,
+        "y": 4.41
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.379705757984981,
+        "y": 2.7871790978959985
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.780427249870191,
+        "y": 0.749493538930016
+      },
+      "prevControl": {
+        "x": 4.537524959419668,
+        "y": 0.6482214200724444
+      },
+      "nextControl": {
+        "x": 5.186034164336516,
+        "y": 0.9186013376876971
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.48,
+        "y": 1.81
+      },
+      "prevControl": {
+        "x": 7.185876691438326,
+        "y": 1.683938588930896
+      },
+      "nextControl": {
+        "x": 7.794930857025843,
+        "y": 1.9449795377320638
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.87,
+        "y": 2.58
+      },
+      "prevControl": {
+        "x": 8.778086466074477,
+        "y": 2.5406058090409056
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 2.75,
+      "rotationDegrees": 23.2,
+      "rotateFast": true
+    },
+    {
+      "waypointRelativePos": 1.5,
+      "rotationDegrees": 23.2,
+      "rotateFast": true
+    },
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 35.0,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.5,
+    "maxAcceleration": 4.5,
+    "maxAngularVelocity": 300.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 23.2,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": "Blue Paths",
+  "previewStartingState": {
+    "rotation": -60.25999999999999,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

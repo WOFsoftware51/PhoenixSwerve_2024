@@ -1,4 +1,4 @@
-package frc.robot.autos.Blue_Autos.Middle_Autos;
+package frc.robot.autos.Middle_Autos;
 
 import frc.robot.Constants;
 import frc.robot.commands.IntakeCommand;
@@ -29,7 +29,7 @@ public class Blue_Auto_Bumper_0_2_1_Far extends SequentialCommandGroup {
 
 
         addCommands(
-            new InstantCommand(() -> swerve.seedFieldRelative(-60)),
+            new InstantCommand(() -> swerve.seedFieldRelativeAngle(-60)),
             new ParallelCommandGroup(
                 aSub.auton_Shooter_Start(shooter),
                 aSub.auton_Turret_Start(turret, Constants.Turret.TURRET_DEFAULT_POSITION)
@@ -64,7 +64,7 @@ public class Blue_Auto_Bumper_0_2_1_Far extends SequentialCommandGroup {
                 new Auton_Wait(100),
                 aSub.auton_Shoot(transfer)
             ),
-            new InstantCommand(() -> swerve.setHeading(swerve.getGyroYaw())),
+            new InstantCommand(() -> swerve.seedFieldRelative()),
             aSub.auton_Stop_Shooter(shooter)
         );
     }

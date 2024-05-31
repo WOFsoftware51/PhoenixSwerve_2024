@@ -21,10 +21,12 @@ import frc.robot.autos.Blue_Leave_Zone;
 import frc.robot.autos.Shoot_Only_Auto;
 import frc.robot.autos.TestAuton;
 import frc.robot.autos.Bottom_Autos.Blue_Auto_Bumper_0_3;
+// import frc.robot.autos.Bottom_Autos.Blue_Auto_Bumper_0_3;
 import frc.robot.autos.Bottom_Autos.Blue_Auto_Bumper_0_7_Far;
 import frc.robot.autos.Bottom_Autos.Blue_Auto_Bumper_0_8_7_Far;
 import frc.robot.autos.Bottom_Autos.Blue_Auto_Bumper_0_8_Far;
 import frc.robot.autos.Middle_Autos.Blue_Auto_Bumper_0_2_1_Far;
+// import frc.robot.autos.Middle_Autos.Blue_Auto_Bumper_0_2_1_Far;
 import frc.robot.autos.Middle_Autos.Blue_Auto_Bumper_Middle_0_2_3_1;
 import frc.robot.autos.Middle_Autos.Blue_Auto_Bumper_Middle_0_3_2_1;
 import frc.robot.autos.Middle_Autos.Blue_Auto_Middle_0_2;
@@ -38,10 +40,13 @@ import frc.robot.autos.Top_Autos.Blue_Auto_Bumper_0_1;
 import frc.robot.autos.Top_Autos.Blue_Auto_Bumper_0_1_4;
 import frc.robot.autos.Top_Autos.Blue_Auto_Bumper_0_1_4_5_Far;
 import frc.robot.autos.Top_Autos.Blue_Auto_Bumper_0_1_5_Far;
+import frc.robot.commands.CANdle_Default;
 import frc.robot.commands.CANdle_Intake_Command;
 import frc.robot.commands.CANdle_LockOn_Command;
+import frc.robot.commands.ElevatorCommand;
 import frc.robot.commands.Elevator_Goto_Angle;
 import frc.robot.commands.HangerCommand;
+import frc.robot.commands.HangerManualCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.IntakeCommand_Reverse;
 import frc.robot.commands.Right_Trigger_Boost_True;
@@ -52,6 +57,7 @@ import frc.robot.commands.Transfer_IntakeCommand_No_Sensor;
 import frc.robot.commands.Transfer_IntakeCommand_Reverse;
 import frc.robot.commands.Transfer_IntakeShoot;
 import frc.robot.commands.TurretAim;
+import frc.robot.commands.TurretCommand;
 import frc.robot.commands.Turret_Goto_Angle;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Auton_Subsystem;
@@ -73,8 +79,6 @@ public class RobotContainer {
   private final SendableChooser<Integer> a_chooser = new SendableChooser<>(); //Autonomous chooser
 
 
-  private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
-  private double MaxAngularRate = 2.0*Math.PI;  //1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
 
 
   /* Setting up bindings for necessary control of the swerve drive platform */
@@ -83,38 +87,43 @@ public class RobotContainer {
   private final CommandXboxController testController = new CommandXboxController(2); // My controller buttons for testing
   public final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
 
-    /* Subsystems */
-    private final Elevator m_Elevator = new Elevator();
-    private final Hanger m_Hanger = new Hanger();
-    private final Intake m_Intake = new Intake();
-    private final Transfer_Intake m_Transfer = new Transfer_Intake();
-    private final Turret m_Turret = new Turret();
-    private final Shooter m_Shooter = new Shooter();
-    private final Auton_Subsystem m_aSub = new Auton_Subsystem();
-    private final CANdle_Subsystem m_Candle = new CANdle_Subsystem();
+  /* Subsystems */
+  private final Elevator m_Elevator = new Elevator();
+  private final Hanger m_Hanger = new Hanger();
+  private final Intake m_Intake = new Intake();
+  private final Transfer_Intake m_Transfer = new Transfer_Intake();
+  private final Turret m_Turret = new Turret();
+  private final Shooter m_Shooter = new Shooter();
+  private final Auton_Subsystem m_aSub = new Auton_Subsystem();
+  private final CANdle_Subsystem m_Candle = new CANdle_Subsystem();
+  private final Limelight m_Limelight = new Limelight();
 
-  private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-      .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
-                                                               // driving in open loop
+
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   
   
 
-  private final Telemetry logger = new Telemetry(MaxSpeed);
+  private final Telemetry logger = new Telemetry(Constants.MaxSpeed);
 
   private void configureBindings() 
   {
-    double targetPercentSpeed = (Global_Variables.right_trigger_boost) ? 1.0 : Constants.DRIVE_SPEED; //If holding boost button, will return 1. Otherwise, will return 0.6.
-    double swerveRotationRate = (operator.x().getAsBoolean() && Global_Variables.tv == 1) ? (drivetrain.limelight_aim_swerve()) : (-driver.getRightX()*targetPercentSpeed);
 
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-driver.getLeftY() * MaxSpeed * targetPercentSpeed) // Drive forward with
-                                                                                         // negative Y (forward)
-            .withVelocityY(-driver.getLeftX() * MaxSpeed * targetPercentSpeed) // Drive left with negative X (left)
-            .withRotationalRate(swerveRotationRate * MaxAngularRate) // Drive counterclockwise with negative X (left)
+        drivetrain.applyRequest(() -> drivetrain.drive.withVelocityX(-driver.getLeftY() * Constants.MaxSpeed * Global_Variables.targetPercentSpeed()) // Drive forward with
+                                                                                                                                                      // negative Y (forward)
+            .withVelocityY(-driver.getLeftX() * Constants.MaxSpeed * Global_Variables.targetPercentSpeed()) // Drive left with negative X (left)
+            .withRotationalRate(drivetrain.swerveRotationRate(operator.x().getAsBoolean(), driver.getRightX()) * Constants.MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
+
+    m_Elevator.setDefaultCommand(new ElevatorCommand(m_Elevator, ()-> -operator.getLeftY())); //-operator.getLeftY()));
+    m_Turret.setDefaultCommand(new TurretCommand(m_Turret, ()-> testController.getRightY()));
+    m_Hanger.setDefaultCommand(new HangerManualCommand(m_Hanger, ()-> -operator.getRightY()));
+
+    // m_Hanger.setDefaultCommand(new HangerManualCommand_SeperateControl(m_Hanger, ()-> testController.getRightY(), ()-> testController.getLeftY()))
+
+    m_Candle.setDefaultCommand(new CANdle_Default(m_Candle));
+    
 
     driver.a().whileTrue(drivetrain.applyRequest(() -> brake));
     driver.b().whileTrue(drivetrain
@@ -258,7 +267,7 @@ public class RobotContainer {
         case 22: autonomous = new Blue_Auto_Bumper_0_2_1_Far(drivetrain, m_Turret, m_Shooter, m_aSub, m_Transfer, m_Intake);
         case 23: autonomous = new Blue_Auto_Middle_Bumper_0_2_3(drivetrain, m_Turret, m_Shooter, m_aSub, m_Transfer, m_Intake);
         case 24: autonomous = new Blue_Auto_Middle_Bumper_0_3(drivetrain, m_Turret, m_Shooter, m_aSub, m_Transfer, m_Intake);
-        // case 25: autonomous = new Blue_Auto_Middle_0_3_2_1(drivetrain, m_Turret, m_Shooter, m_aSub, m_Transfer, m_Intake);
+        case 25: autonomous = new Blue_Auto_Middle_0_3_2_1(drivetrain, m_Turret, m_Shooter, m_aSub, m_Transfer, m_Intake);
         case 26: autonomous = new Blue_Auto_Middle_0_3_2(drivetrain, m_Turret, m_Shooter, m_aSub, m_Transfer, m_Intake);
         case 27: autonomous = new Blue_Auto_Middle_0_2_6(drivetrain, m_Turret, m_Shooter, m_aSub, m_Transfer, m_Intake);
         case 28: autonomous = new Blue_Auto_Bumper_Middle_0_3_2_1(drivetrain, m_Turret, m_Shooter, m_aSub, m_Transfer, m_Intake);

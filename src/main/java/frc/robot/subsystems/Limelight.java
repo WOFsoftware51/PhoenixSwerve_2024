@@ -32,7 +32,7 @@ public class Limelight extends SubsystemBase {
         return ((0.0)*Math.pow(distanceY, 0) + 0.0);
     }
     private PoseEstimate getVisionPoseEstimate2d(){
-        return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+        return LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
     }
 
 
@@ -41,6 +41,10 @@ public class Limelight extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    tv = table.getEntry("tv").getDouble(0);
+    ty = table.getEntry("ty").getDouble(0);
+    tx = table.getEntry("tx").getDouble(0);
     
     Global_Variables.tx = tx;
     Global_Variables.ty = ty;
@@ -49,15 +53,11 @@ public class Limelight extends SubsystemBase {
     Global_Variables.distanceYFixed = getDistanceYFixed();
     Global_Variables.visionPoseEstimate2d = getVisionPoseEstimate2d();
 
-    SmartDashboard.putNumber("tx", tx);
+    SmartDashboard.putNumber("tx", Global_Variables.tx);
     SmartDashboard.putNumber("tv", Global_Variables.tv);
     SmartDashboard.putNumber("ty", Global_Variables.ty);
-    SmartDashboard.putNumber("Vision Pose X", getVisionPoseEstimate2d().pose.getX());
-    SmartDashboard.putNumber("Vision Pose Y", getVisionPoseEstimate2d().pose.getY());
-
-    tv = table.getEntry("tv").getDouble(0);
-    ty = table.getEntry("ty").getDouble(0);
-    tx = table.getEntry("tx").getDouble(0);
+    SmartDashboard.putNumber("Vision Pose X", Global_Variables.visionPoseEstimate2d.pose.getX());
+    SmartDashboard.putNumber("Vision Pose Y", Global_Variables.visionPoseEstimate2d.pose.getY());
 
     distanceY = (Constants.APRIL_TAG_HEIGHT-Constants.LIMELIGHT_HEIGHT)/(Math.tan(Math.toRadians(Constants.LIMELIGHT_ANGLE+ty)));
 }

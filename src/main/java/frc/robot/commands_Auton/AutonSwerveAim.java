@@ -46,22 +46,15 @@ public class AutonSwerveAim extends Command {
       /* Get Values, Deadband*/
       endCommand = false;
       count = 0;
-      if(DriverStation.getAlliance().isPresent()){
-        if(DriverStation.getAlliance().get() == Alliance.Blue){
-          targetAprilTag = Field.Blue.kAprilTag7;
-        }
-        if(DriverStation.getAlliance().get() == Alliance.Red){
-          targetAprilTag = Field.Red.kAprilTag4;
-        }
-      }
-  }
+      targetAprilTag = Global_Variables.getTargetAimAprilTag();
+    }
 
     @Override
     public void execute() {
 
     double translationVal = MathUtil.applyDeadband(translationSup.getAsDouble(), Constants.stickDeadband);
     double strafeVal = MathUtil.applyDeadband(strafeSup.getAsDouble(), Constants.stickDeadband);
-    Translation2d robotVisionBaesdPosition = Global_Variables.visionPoseEstimate2d.pose.getTranslation();
+    Translation2d robotVisionBasedPosition = Global_Variables.visionPoseEstimate2d.pose.getTranslation();
 
     if(Global_Variables.tv == 1){
 
@@ -71,7 +64,7 @@ public class AutonSwerveAim extends Command {
       else{
         rotationTarget = 
           new Rotation2d(360 * (Math.PI/180))
-            .minus(new Rotation2d(robotVisionBaesdPosition.getX() - targetAprilTag.getPosition().getX(), robotVisionBaesdPosition.getY() - targetAprilTag.getPosition().getY()));
+            .minus(new Rotation2d(robotVisionBasedPosition.getX() - targetAprilTag.getPosition().getX(), robotVisionBasedPosition.getY() - targetAprilTag.getPosition().getY()));
       }
       count++;
     }
@@ -80,7 +73,7 @@ public class AutonSwerveAim extends Command {
     }
     
     /* Drive */
-      s_Swerve.applyRequest(() -> drive.withVelocityX(translationVal * TunerConstants.kSpeedAt12VoltsMps).withVelocityY(strafeVal * TunerConstants.kSpeedAt12VoltsMps).withTargetDirection(rotationTarget));
+      s_Swerve.applyDriveRequest(translationVal * TunerConstants.kSpeedAt12VoltsMps, strafeVal * TunerConstants.kSpeedAt12VoltsMps, 0.0, true, rotationTarget.getDegrees());
     }
 
     

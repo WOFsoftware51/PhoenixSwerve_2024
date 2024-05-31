@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -18,15 +19,19 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import frc.robot.Global_Variables;
+import frc.robot.field.AprilTag;
 import frc.robot.generated.TunerConstants;
 
 /**
@@ -37,6 +42,16 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
+
+    public final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+      .withDeadband(Constants.MaxSpeed * 0.1).withRotationalDeadband(Constants.MaxAngularRate * 0.1) // Add a 10% deadband
+      .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
+                                                               // driving in open loop
+                                                               
+    public final SwerveRequest.FieldCentricFacingAngle driveWhileAiming = new SwerveRequest.FieldCentricFacingAngle()
+      .withDeadband(Constants.MaxSpeed * 0.1).withRotationalDeadband(Constants.MaxAngularRate * 0.1) // Add a 10% deadband
+      .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
+
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private final Rotation2d BlueAlliancePerspectiveRotation = Rotation2d.fromDegrees(0);
@@ -153,6 +168,31 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         );
     }
 
+    public double swerveRotationRate(boolean isAiming, double driver){
+        return (isAiming && Global_Variables.tv == 1) ? (limelight_aim_swerve()) : (-driver*Global_Variables.targetPercentSpeed());
+    }
+
+    public Command applyDriveRequest(double driverLeftY, double driverLeftX, double driverRightX, boolean isAiming){
+        AprilTag targetAprilTag = Global_Variables.getTargetAimAprilTag();
+        Translation2d robotVisionBasedPosition = Global_Variables.visionPoseEstimate2d.pose.getTranslation();
+
+        if(isAiming && (Global_Variables.tv == 1)){
+            return this.applyRequest(() -> driveWhileAiming
+                .withVelocityX(-driverLeftY * Constants.MaxSpeed * Global_Variables.targetPercentSpeed())
+                .withVelocityY(-driverLeftX *Constants.MaxSpeed * Global_Variables.targetPercentSpeed())
+                .withTargetDirection(
+                    new Rotation2d(360 * (Math.PI/180))
+                    .minus(new Rotation2d(robotVisionBasedPosition.getX() - targetAprilTag.getPosition().getX(), robotVisionBasedPosition.getY() - targetAprilTag.getPosition().getY())))
+        );
+        }
+        else{
+            return this.applyRequest(() -> drive
+                .withVelocityX(-driverLeftY * Constants.MaxSpeed * Global_Variables.targetPercentSpeed())
+                .withVelocityY(-driverLeftX *Constants.MaxSpeed * Global_Variables.targetPercentSpeed())
+                .withRotationalRate((-driverRightX * Global_Variables.targetPercentSpeed()) * Constants.MaxAngularRate));
+        }
+    }
+
 
 
     @Override
@@ -170,11 +210,12 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 hasAppliedOperatorPerspective = true;
             });
         }
-        SmartDashboard.putNumber("X axis", getRotation3d().getX()*180/Math.PI);
-        SmartDashboard.putNumber("Y axis", getRotation3d().getY()*180/Math.PI);
+        SmartDashboard.putNumber("X Position", getState().Pose.getX());
+        SmartDashboard.putNumber("Y Position", getState().Pose.getY());
         SmartDashboard.putNumber("Chassis Speeds", Math.hypot(getCurrentRobotChassisSpeeds().vxMetersPerSecond, getCurrentRobotChassisSpeeds().vyMetersPerSecond));
         SmartDashboard.putNumber("Chassis Speeds X", (getCurrentRobotChassisSpeeds().vxMetersPerSecond));
         SmartDashboard.putNumber("Chassis Speeds Y", getCurrentRobotChassisSpeeds().vyMetersPerSecond);
+        SmartDashboard.putNumber("limelightAimSwerve Value", limelight_aim_swerve());
 
     
     }

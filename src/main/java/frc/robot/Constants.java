@@ -1,14 +1,8 @@
 package frc.robot;
 
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
-
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import frc.robot.generated.TunerConstants;
 
 public final class Constants {
     public static final double stickDeadband = 0.1;
@@ -20,6 +14,9 @@ public final class Constants {
     public static final double APRIL_TAG_HEIGHT = 57;// 57.25; //54
     public static final double LIMELIGHT_HEIGHT = 7.0;// 57.25; //54
     public static final double LIMELIGHT_ANGLE = 31.15; //30.3
+
+    public static final double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
+    public static final double MaxAngularRate = 2.0*Math.PI;  //1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
 
 
 

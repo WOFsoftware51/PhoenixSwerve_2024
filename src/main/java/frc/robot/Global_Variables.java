@@ -6,9 +6,13 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.RawFiducial;
+import frc.robot.field.AprilTag;
+import frc.robot.field.Field;
 
 public class Global_Variables
 {
@@ -78,6 +82,31 @@ public class Global_Variables
     else{
       return true;
     }
+  }
+
+  public static double targetPercentSpeed(){
+    return (Global_Variables.right_trigger_boost) ? 1.0 : Constants.DRIVE_SPEED;
+  }
+
+  /**Returns the apriltag that we want to aim towards when shooting towards the speaker
+   * @return AprilTag object kAprilTag7 when on blue. kAprilTag4 when on red.
+   * @default If the alliance color is invalid (i.e. not red or blue), will default to blue
+  */
+  public static AprilTag getTargetAimAprilTag(){
+    AprilTag targetAprilTag = Field.Blue.kAprilTag7;
+    if(DriverStation.getAlliance().isPresent())
+    {
+      if(DriverStation.getAlliance().get() == Alliance.Blue)
+      {
+        targetAprilTag = Field.Blue.kAprilTag7;
+      }
+      if(DriverStation.getAlliance().get() == Alliance.Red)
+      {
+        targetAprilTag = Field.Red.kAprilTag4;
+      }
+    }
+    return targetAprilTag;
+
   }
 
 
